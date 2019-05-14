@@ -44,7 +44,7 @@ public class Parser {
 
             while (line != null) {
                 Post p = parsePost(line);
-                if(p != null && p.getStringTags().contains("<architecture>")){
+                if(p != null && p.isQuestion() && p.getStringTags().contains("<architecture>")){
                     writer.write(line);
                     writer.newLine();
                     savedPosts.add(p);
@@ -71,10 +71,9 @@ public class Parser {
                         doc.getRootElement().getAttributeValue("Score"),
                         doc.getRootElement().getAttributeValue("ViewCount"),
                         doc.getRootElement().getAttributeValue("Body"),
-                        doc.getRootElement().getAttributeValue("LastEditDate"),
-                        doc.getRootElement().getAttributeValue("LastActivityDate"),
                         doc.getRootElement().getAttributeValue("Title"),
                         doc.getRootElement().getAttributeValue("Tags"),
+                        doc.getRootElement().getAttributeValue("AnswerCount"),
                         doc.getRootElement().getAttributeValue("CommentCount"),
                         doc.getRootElement().getAttributeValue("FavoriteCount"));
                 return p;

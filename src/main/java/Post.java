@@ -17,20 +17,6 @@ public class Post {
     int commentCount;
     int favouriteCount;
 
-    public Post(){}
-
-    public static Post getPost(int id, int postTypeId, String creationDate, String score, String viewCount, String body, String title, String tags, String answerCount, String commentCount, String favouriteCount) {
-        switch (postTypeId) {
-            case 1:
-                return new Question(id, creationDate, score, viewCount, body, title, tags, answerCount, commentCount, favouriteCount);
-            case 2:
-                return new Answer(id, creationDate, score, viewCount, body,  );
-            default:
-                return null;
-
-        }
-    }
-
     public Post(int id, int postTypeId, String creationDate, String score, String viewCount, String body, String title, String tags, String answerCount, String commentCount, String favouriteCount ){
         this.id = id;
         this.postTypeId = postTypeId;
@@ -56,6 +42,14 @@ public class Post {
             this.favouriteCount = tryNullOrZero(favouriteCount);
     }
 
+    public boolean isQuestion(){
+        return postTypeId == 1;
+    }
+
+    public boolean isAnswer(){
+        return postTypeId == 2;
+    }
+
     private int tryNullOrZero(String score) {
         int temp = 0;
         try {
@@ -66,5 +60,7 @@ public class Post {
         return temp;
     }
 
-
+    public String getStringTags() {
+        return stringTags;
+    }
 }

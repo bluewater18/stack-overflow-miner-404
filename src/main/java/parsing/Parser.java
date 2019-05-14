@@ -1,3 +1,7 @@
+package parsing;
+
+import models.Post;
+import models.Tags;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
@@ -12,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
-    String jarString;
+    private String jarString;
 
     public Parser() {
         String jarUrl = null;
@@ -21,20 +25,25 @@ public class Parser {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+        assert jarUrl != null;
         File jarDir = new File(jarUrl);
         jarString = jarDir.getParentFile().toString();
 
     }
 
-    public void parseForReduction(String fileIn, String fileOut) {
+    /**
+     * Parse larger file to a smaller file that only contains posts with the tag specified
+     * @param fileIn name of the file to be read from the jar directory
+     * @param fileOut name of the file to be written to in the jar directory
+     * @param tag tag to be matched
+     */
+    public void parseForReduction(String fileIn, String fileOut, Tags tag) {
         BufferedReader reader;
         BufferedWriter writer;
         Path file = Paths.get(jarString+ System.getProperty("file.separator") + fileIn);
         Path outfilePath = Paths.get(jarString+ System.getProperty("file.separator") + fileOut);
         File outFile = new File(String.valueOf(outfilePath));
 
-
-        List<Post> savedPosts = new ArrayList<>();
         try {
             reader = new BufferedReader(new FileReader(String.valueOf(file)));
             outFile.createNewFile();
@@ -44,22 +53,25 @@ public class Parser {
 
             while (line != null) {
                 Post p = parsePost(line);
-                if(p != null && p.isQuestion() && p.getStringTags().contains("<architecture>")){
+                if(p != null && p.isQuestion() && p.getStringTags().contains(tag.getTagString())){
                     writer.write(line);
                     writer.newLine();
-                    savedPosts.add(p);
                     savedPostCount++;
                 }
 
                 line = reader.readLine();
+                System.out.println("Copied " + savedPostCount + " from " + fileIn + " to " + fileOut + " with tag " + tag.getTagString());
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * parses an xml representation of a singular post from a string
+     * @param line xml representation of a post
+     * @return post object made from the data
+     */
     private Post parsePost(String line) {
         org.jdom.input.SAXBuilder saxBuilder = new SAXBuilder();
         try {
@@ -72,7 +84,7 @@ public class Parser {
                         doc.getRootElement().getAttributeValue("ViewCount"),
                         doc.getRootElement().getAttributeValue("Body"),
                         doc.getRootElement().getAttributeValue("Title"),
-                        doc.getRootElement().getAttributeValue("Tags"),
+                        doc.getRootElement().getAttributeValue("models.Tags"),
                         doc.getRootElement().getAttributeValue("AnswerCount"),
                         doc.getRootElement().getAttributeValue("CommentCount"),
                         doc.getRootElement().getAttributeValue("FavoriteCount"));

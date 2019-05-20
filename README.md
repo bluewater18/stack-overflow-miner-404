@@ -18,3 +18,11 @@ A second iteration of a small program designed to strip data about specific tags
 - Run the project to generate target folder
 - add an in.txt file with all architecture posts in the target folder
 - the analysis will be written to analysis.txt file in target folder
+
+# Instructions for graphs
+- Load project as for analysis
+- Graphs will be generated in target folder for:
+    - Architecture
+    - Framework
+    - Language
+    - Tags

@@ -1,5 +1,6 @@
 package parsing;
 
+import chart.CustomAreaChart;
 import models.Post;
 import models.Tags;
 import models.Words;
@@ -67,7 +68,7 @@ public class Parser {
                 }
 
                 line = reader.readLine();
-                System.out.println("Copied " + savedPostCount + " from " + fileIn + " to " + fileOut + " with tag " + tag.getTagString());
+                //System.out.println("Copied " + savedPostCount + " from " + fileIn + " to " + fileOut + " with tag " + tag.getTagString());
             }
             reader.close();
             writer.flush();
@@ -154,6 +155,12 @@ public class Parser {
             writeMapToWriter(writer, frameworkMap);
             writeMapToWriter(writer, languageMap);
             writeMapToWriterWithMin(writer, tagMap, 10);
+
+            List<CustomAreaChart> charts = new ArrayList<>();
+            charts.add(new CustomAreaChart("architecture", architectureMap));
+            charts.add(new CustomAreaChart("framework", frameworkMap));
+            charts.add(new CustomAreaChart("language", languageMap));
+            charts.add(new CustomAreaChart("tags", tagMap));
 
             reader.close();
             writer.flush();

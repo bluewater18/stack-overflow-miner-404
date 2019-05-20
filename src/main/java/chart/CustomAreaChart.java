@@ -4,13 +4,17 @@ import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
 import org.knowm.xchart.internal.series.Series;
+import org.knowm.xchart.style.Styler;
+import org.knowm.xchart.style.colors.ChartColor;
 import parsing.Parser;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.List;
 
 public class CustomAreaChart {
     private Map<Integer,Map<String, Integer>> map;
@@ -24,6 +28,7 @@ public class CustomAreaChart {
         this.chartName = chartName;
         this.map = map;
         createChart();
+        setStyle(chart);
         export();
     }
 
@@ -41,9 +46,9 @@ public class CustomAreaChart {
 
 
 
-        chart = new XYChartBuilder().width(2048).height(2048).build();
-        chart.getStyler().setToolTipsEnabled(true);
-        chart.getStyler().setHasAnnotations(true);
+        chart = new XYChartBuilder().width(2048).height(2048).xAxisTitle("Year").yAxisTitle("Occurrences").title(chartName).build();
+
+
 
         Map<String, Map<Integer, Integer>> data = new HashMap<>();
 //        for(Map.Entry<String, Map<Integer, Integer>> e: data.entrySet()) {
@@ -137,6 +142,36 @@ public class CustomAreaChart {
             }
         });
         return list;
+    }
+
+    /**
+     * Sets the style of the chart
+     * @param chart chart to have style changed
+     */
+    private void setStyle(XYChart chart) {
+
+        chart.getStyler().setYAxisMin(0.00);
+        chart.getStyler().setToolTipsEnabled(true);
+        chart.getStyler().setHasAnnotations(true);
+        chart.getStyler().setPlotBackgroundColor(ChartColor.getAWTColor(ChartColor.GREY));
+        chart.getStyler().setPlotGridLinesColor(new Color(255, 0, 255));
+        chart.getStyler().setChartBackgroundColor(Color.WHITE);
+        chart.getStyler().setLegendBackgroundColor(Color.WHITE);
+        chart.getStyler().setChartFontColor(Color.BLACK);
+        chart.getStyler().setChartTitleBoxBackgroundColor(Color.white);
+        chart.getStyler().setChartTitleBoxVisible(true);
+        chart.getStyler().setChartTitleBoxBorderColor(Color.BLACK);
+        chart.getStyler().setPlotGridLinesVisible(false);
+        chart.getStyler().setChartTitleFont(new Font(Font.SANS_SERIF, Font.BOLD, 32));
+        chart.getStyler().setLegendFont(new Font(Font.SANS_SERIF, Font.PLAIN, 18));
+        chart.getStyler().setLegendPosition(Styler.LegendPosition.OutsideE);
+        chart.getStyler().setLegendSeriesLineLength(12);
+        chart.getStyler().setLegendLayout(Styler.LegendLayout.Vertical);
+        chart.getStyler().setAxisTitleFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));
+        chart.getStyler().setDecimalPattern("#0.0");
+        chart.getStyler().setPlotBorderColor(Color.WHITE);
+        chart.getStyler().setPlotBackgroundColor(Color.WHITE);
+
     }
 
     private void export(){

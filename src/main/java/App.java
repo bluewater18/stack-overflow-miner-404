@@ -6,7 +6,7 @@ public class App {
     public static void main(String [] args) {
         Parser parser = new Parser();
         long startTime = System.nanoTime();
-        parser.parseForReduction("in.txt", "architecture.txt", Tags.ARCHITECTURE);
+        //parser.parseForReduction("in.txt", "architecture.txt", Tags.ARCHITECTURE);
         parser.parseForAnalysis("architecture.txt", "analysis.txt");
         long endTime = System.nanoTime();
         long timeElapsed = endTime - startTime;

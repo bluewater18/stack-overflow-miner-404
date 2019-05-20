@@ -3,6 +3,7 @@ package models;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @XmlRootElement
 public class Post {
@@ -64,5 +65,31 @@ public class Post {
 
     public String getStringTags() {
         return stringTags;
+    }
+
+    public int getYear(){
+        try {
+            return Integer.parseInt(creationDate.substring(0, 4));
+        }catch (NumberFormatException nfe) {
+            return -1;
+        }
+    }
+
+    public List<String> getWords() {
+        List<String> words = new ArrayList<>();
+        List<String> finalWords = new ArrayList<>();
+        words.addAll(Arrays.asList(title.split(" ")));
+        words.addAll(Arrays.asList(body.split(" ")));
+        for(String s: words){
+            finalWords.add(s.trim().toLowerCase());
+        }
+        return finalWords;
+
+    }
+
+    public ArrayList<String> getTags() {
+        if(tags != null)
+            return tags;
+        return new ArrayList<>();
     }
 }

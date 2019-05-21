@@ -19,11 +19,12 @@ import java.util.*;
 
 public class Parser {
     private String jarString;
-    private List<Integer> years = new ArrayList<>(Arrays.asList(2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019));
+    private List<Integer> years = new ArrayList<>(Arrays.asList(2009,2010,2011,2012,2013,2014,2015,2016,2017,2018));
     private Map<Integer, Map<String, Integer>> tagMap;
     private Map<Integer, Map<String, Integer>> architectureMap;
     private Map<Integer, Map<String, Integer>> frameworkMap;
     private Map<Integer, Map<String, Integer>> languageMap;
+    private Map<Integer, Integer> yearMap;
 
 
     public Parser() {
@@ -106,12 +107,15 @@ public class Parser {
             architectureMap = new HashMap<>();
             languageMap = new HashMap<>();
             frameworkMap = new HashMap<>();
+            yearMap = new HashMap<>();
+
 
             for(Integer i: years){
                 tagMap.put(i, new HashMap<String, Integer>());
                 architectureMap.put(i, new HashMap<String, Integer>());
                 languageMap.put(i, new HashMap<String, Integer>());
                 frameworkMap.put(i, new HashMap<String, Integer>());
+                yearMap.put(i,0);
             }
 
             for(Map.Entry<Integer, Map<String, Integer>> e: architectureMap.entrySet()) {
@@ -135,6 +139,11 @@ public class Parser {
             for(Post p: posts) {
                 count++;
                 year = p.getYear();
+                try{
+                    if(yearMap.containsKey(year)){
+                        yearMap.put(year, yearMap.get(year) + 1);
+                    }
+                } catch (Exception e) {}
                 for(String s : p.getWords()) {
                     insertIntoMapExisting(year, s, architectureMap);
                     insertIntoMapExisting(year, s, frameworkMap);
@@ -152,15 +161,27 @@ public class Parser {
             writer = Files.newBufferedWriter(outfilePath, StandardCharsets.UTF_8, StandardOpenOption.WRITE);
 
             writeMapToWriter(writer, architectureMap);
+            writer.flush();
             writeMapToWriter(writer, frameworkMap);
+            writer.flush();
             writeMapToWriter(writer, languageMap);
+            writer.flush();
             writeMapToWriterWithMin(writer, tagMap, 10);
+            writer.flush();
+
+
+            for(Map.Entry<Integer, Integer> e : sortMapByYearInt(yearMap)){
+                writer.write(e.getKey() + " :: " + e.getValue());
+                writer.newLine();
+            }
 
             List<CustomAreaChart> charts = new ArrayList<>();
-            charts.add(new CustomAreaChart("architecture", architectureMap));
-            charts.add(new CustomAreaChart("framework", frameworkMap));
-            charts.add(new CustomAreaChart("language", languageMap));
-            charts.add(new CustomAreaChart("tags", tagMap));
+            charts.add(new CustomAreaChart("architecture", architectureMap, -1));
+            charts.add(new CustomAreaChart("framework", frameworkMap, -1));
+            charts.add(new CustomAreaChart("language", languageMap, -1));
+            charts.add(new CustomAreaChart("tags30", tagMap, 30));
+            charts.add(new CustomAreaChart("tags25", tagMap, 25));
+            charts.add(new CustomAreaChart("tags20", tagMap, 20));
 
             reader.close();
             writer.flush();
@@ -230,7 +251,7 @@ public class Parser {
 
                 List<Map.Entry<String, Integer>> tempInside = sortMapByOccurence(e.getValue());
                 for (Map.Entry<String, Integer> m : tempInside) {
-                    if(m.getValue() >= min) {
+                    if(m.getValue() >= min || m.getKey().equals("event-sourcing")) {
                         writer.write(e.getKey() + " : " + m.getKey() + " : " + m.getValue());
                         writer.newLine();
                         //System.out.println(e.getKey() + " : " + m.getKey() + " : " + m.getValue());
@@ -265,6 +286,20 @@ public class Parser {
             else
                 temp.put(toInsert, 1);
         } catch (NullPointerException e){}
+
+    }
+
+    private List<Map.Entry<Integer, Integer>> sortMapByYearInt(Map<Integer, Integer> map) {
+        List<Map.Entry<Integer, Integer>> list = new LinkedList<Map.Entry<Integer, Integer>>(map.entrySet());
+
+        Collections.sort(list, new Comparator<Map.Entry<Integer, Integer>>() {
+            @Override
+            public int compare(Map.Entry<Integer, Integer> t0, Map.Entry<Integer, Integer> t1) {
+                return(t0.getKey()).compareTo(t1.getKey());
+            }
+        });
+
+        return list;
 
     }
     

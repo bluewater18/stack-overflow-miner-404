@@ -17,16 +17,18 @@ import java.util.*;
 import java.util.List;
 
 public class CustomAreaChart {
+    private final int min;
     private Map<Integer,Map<String, Integer>> map;
-    private List<Integer> years = new ArrayList<>(Arrays.asList(2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019));
+    private List<Integer> years = new ArrayList<>(Arrays.asList(2009,2010,2011,2012,2013,2014,2015,2016,2017,2018));
     private XYChart chart;
     private String jarString;
     private String chartName;
 
 
-    public CustomAreaChart(String chartName, Map<Integer,Map<String, Integer>> map) {
+    public CustomAreaChart(String chartName, Map<Integer,Map<String, Integer>> map, int min) {
         this.chartName = chartName;
         this.map = map;
+        this.min = min;
         createChart();
         setStyle(chart);
         export();
@@ -78,32 +80,59 @@ public class CustomAreaChart {
     private void addTagSeries(Map<String,Map<Integer,Integer>> data) {
         for(Map.Entry<String, Map<Integer, Integer>> e: data.entrySet())
         {
-            double[] years = new double[]{2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019};
-            double[] values = new double[11];
-            int count = 0;
+            double[] years = new double[]{2009,2010,2011,2012,2013,2014,2015,2016,2017,2018};
+            double[] values = new double[10];
             boolean add = false;
 
 
 
             for(Map.Entry<Integer, Integer> m : sortMapByYearInt(e.getValue())){
-                count++;
-                if(m.getValue().doubleValue() <30 || m.getKey() < 2009 || m.getKey()> 2019)
-                    continue;
-                values[count-1] = m.getValue().doubleValue();
-                add = true;
+                switch (m.getKey()){
+                    case 2009:
+                        values[0] = m.getValue().doubleValue();
+                        break;
+                    case 2010:
+                        values[1] = m.getValue().doubleValue();
+                        break;
+                    case 2011:
+                        values[2] = m.getValue().doubleValue();
+                        break;
+                    case 2012:
+                        values[3] = m.getValue().doubleValue();
+                        break;
+                    case 2013:
+                        values[4] = m.getValue().doubleValue();
+                        break;
+                    case 2014:
+                        values[5] = m.getValue().doubleValue();
+                        break;
+                    case 2015:
+                        values[6] = m.getValue().doubleValue();
+                        break;
+                    case 2016:
+                        values[7] = m.getValue().doubleValue();
+                        break;
+                    case 2017:
+                        values[8] = m.getValue().doubleValue();
+                        break;
+                    case 2018:
+                        values[9] = m.getValue().doubleValue();
+                        break;
 
+                }
+                if(m.getValue().doubleValue() > min)
+                    add=true;
             }
-            if(e.getKey().equals("architecture") || !add)
-                continue;
-            chart.addSeries(e.getKey(), years, values);
+            if(!e.getKey().equals("architecture") && add)
+                chart.addSeries(e.getKey(), years, values);
         }
     }
 
     private void addNormalSeries(Map<String, Map<Integer, Integer>> data) {
         for(Map.Entry<String, Map<Integer, Integer>> e: data.entrySet())
         {
-            double[] years = new double[11];
-            double[] values = new double[11];
+            double[] years = new double[10];
+            double[] values = new double[10];
             int count = 0;
 
             for(Map.Entry<Integer, Integer> m : sortMapByYearInt(e.getValue())){

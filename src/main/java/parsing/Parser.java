@@ -4,7 +4,6 @@ import chart.CustomAreaChart;
 import models.Post;
 import models.Tags;
 import models.Words;
-
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
@@ -25,6 +24,7 @@ public class Parser {
     private Map<Integer, Map<String, Integer>> frameworkMap;
     private Map<Integer, Map<String, Integer>> languageMap;
     private Map<Integer, Integer> yearMap;
+    private int tagThreshold;
 
 
     public Parser() {
@@ -40,6 +40,15 @@ public class Parser {
 
     }
 
+
+    /**
+     * Updated the tagThreshold for Tag Graph
+     * @param tagThreshold new tagTreshold
+     */
+    public void setTagThreshold(int tagThreshold) {
+        this.tagThreshold = tagThreshold;
+    }
+
     /**
      * Parse larger file to a smaller file that only contains posts with the tag specified
      * @param fileIn name of the file to be read from the jar directory
@@ -51,12 +60,18 @@ public class Parser {
         BufferedWriter writer;
         Path file = Paths.get(jarString+ System.getProperty("file.separator") + fileIn);
         Path outfilePath = Paths.get(jarString+ System.getProperty("file.separator") + fileOut);
+        try{
+            Files.deleteIfExists(outfilePath);
+        }catch (IOException e){
+            System.out.println("could not delete " + fileOut + " please delete this file and retry");
+            System.exit(1);
+        }
+
         File outFile = new File(String.valueOf(outfilePath));
 
         try {
             reader = new BufferedReader(new FileReader(String.valueOf(file)));
-            outFile.createNewFile();
-            writer = Files.newBufferedWriter(outfilePath, StandardCharsets.UTF_8, StandardOpenOption.WRITE);
+            writer = Files.newBufferedWriter(outfilePath, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
             String line = reader.readLine();
             int savedPostCount = 0;
 
@@ -69,8 +84,8 @@ public class Parser {
                 }
 
                 line = reader.readLine();
-                //System.out.println("Copied " + savedPostCount + " from " + fileIn + " to " + fileOut + " with tag " + tag.getTagString());
             }
+            System.out.println("Copied " + savedPostCount + " from " + fileIn + " to " + fileOut + " with tag " + tag.getTagString());
             reader.close();
             writer.flush();
             writer.close();
@@ -79,6 +94,12 @@ public class Parser {
         }
     }
 
+    /**
+     * Parses a file of posts to map to keywords, and count occurrences of tags
+     * The information gathered is exported to a file and several graphs are created
+     * @param fileIn File of posts to analyse
+     * @param fileOut File for analysis to be written to
+     */
     public void parseForAnalysis(String fileIn, String fileOut) {
         BufferedReader reader;
         BufferedWriter writer;
@@ -86,6 +107,13 @@ public class Parser {
         Path file = Paths.get(jarString+ System.getProperty("file.separator") + fileIn);
         Path outfilePath = Paths.get(jarString+ System.getProperty("file.separator") + fileOut);
         File outFile = new File(String.valueOf(outfilePath));
+
+        try{
+            Files.deleteIfExists(outfilePath);
+        }catch (IOException e){
+            System.out.println("could not delete " + fileOut + " please delete this file and retry");
+            System.exit(1);
+        }
 
         List<Post> posts = new ArrayList<>();
 
@@ -153,12 +181,11 @@ public class Parser {
                 for(String s : p.getTags()){
                     insertIntoMapNotExisting(year, s, tagMap);
                 }
-                System.out.println("analysis of post " + count + " completed");
+                //System.out.println("analysis of post " + count + " completed");
             }
 
 
-            outFile.createNewFile();
-            writer = Files.newBufferedWriter(outfilePath, StandardCharsets.UTF_8, StandardOpenOption.WRITE);
+            writer = Files.newBufferedWriter(outfilePath, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
 
             writeMapToWriter(writer, architectureMap);
             writer.flush();
@@ -175,13 +202,13 @@ public class Parser {
                 writer.newLine();
             }
 
-            List<CustomAreaChart> charts = new ArrayList<>();
-            charts.add(new CustomAreaChart("architecture", architectureMap, -1));
-            charts.add(new CustomAreaChart("framework", frameworkMap, -1));
-            charts.add(new CustomAreaChart("language", languageMap, -1));
-            charts.add(new CustomAreaChart("tags30", tagMap, 30));
-            charts.add(new CustomAreaChart("tags25", tagMap, 25));
-            charts.add(new CustomAreaChart("tags20", tagMap, 20));
+
+            //keyword graph creation
+            new CustomAreaChart("architecture", architectureMap, -1);
+            new CustomAreaChart("framework", frameworkMap, -1);
+            new CustomAreaChart("language", languageMap, -1);
+            //tag graph creation
+            new CustomAreaChart("tags", tagMap, tagThreshold);
 
             reader.close();
             writer.flush();
@@ -193,6 +220,11 @@ public class Parser {
         }
     }
 
+    /**
+     * Writes a map to a writer
+     * @param writer Writer to write to
+     * @param map Map to write
+     */
     private void writeMapToWriter(BufferedWriter writer, Map<Integer, Map<String, Integer>> map) {
         try {
             List<Map.Entry<Integer, Map<String, Integer>>> temp = sortMapByYear(map);
@@ -217,6 +249,11 @@ public class Parser {
         }
     }
 
+    /**
+     * Sorts a map of string, integer by occurrence of integer (high to low)
+     * @param map map to be sorted
+     * @return sorted list of map entries
+     */
     private List<Map.Entry<String, Integer>> sortMapByOccurence(Map<String, Integer> map) {
         List<Map.Entry<String, Integer>> list = new LinkedList<Map.Entry<String, Integer>>(map.entrySet());
 
@@ -230,6 +267,11 @@ public class Parser {
         return list;
     }
 
+    /**
+     * Sorts a map of integer, map string, integer by primary integer
+     * @param map map to be sorted
+     * @return sorted list of map entries
+     */
     private List<Map.Entry<Integer, Map<String, Integer>>> sortMapByYear(Map<Integer, Map<String, Integer>> map) {
         List<Map.Entry<Integer, Map<String, Integer>>> list = new LinkedList<>(map.entrySet());
 
@@ -241,9 +283,13 @@ public class Parser {
         });
         return list;
     }
-    
-    
 
+
+    /**
+     * Writes a map to a writer but checks each line to make sure occurrences in map meet a specific threshold
+     * @param writer Writer to write to
+     * @param map Map to write
+     */
     private void writeMapToWriterWithMin(BufferedWriter writer, Map<Integer, Map<String, Integer>> map, int min) {
         try {
             List<Map.Entry<Integer, Map<String, Integer>>> temp = sortMapByYear(map);
@@ -251,7 +297,7 @@ public class Parser {
 
                 List<Map.Entry<String, Integer>> tempInside = sortMapByOccurence(e.getValue());
                 for (Map.Entry<String, Integer> m : tempInside) {
-                    if(m.getValue() >= min || m.getKey().equals("event-sourcing")) {
+                    if(m.getValue() >= min) {
                         writer.write(e.getKey() + " : " + m.getKey() + " : " + m.getValue());
                         writer.newLine();
                         //System.out.println(e.getKey() + " : " + m.getKey() + " : " + m.getValue());
@@ -269,7 +315,12 @@ public class Parser {
         }
     }
 
-
+    /**
+     * Increments a count of a map when the string already exists in the submap
+     * @param year key of primary map
+     * @param toInsert key of inner mao
+     * @param map map to be manipulated
+     */
     private void insertIntoMapExisting(Integer year, String toInsert, Map<Integer, Map<String, Integer>> map) {
         try {
             Map<String, Integer> temp = map.get(year);
@@ -278,6 +329,12 @@ public class Parser {
         }catch (NullPointerException e) {}
     }
 
+    /**
+     * Increments a count of a map when the string MAY exist in the submap
+     * @param year key of primary map
+     * @param toInsert key of inner mao
+     * @param map map to be manipulated
+     */
     private void insertIntoMapNotExisting(Integer year, String toInsert,  Map<Integer, Map<String, Integer>> map){
         try {
             Map<String, Integer> temp = map.get(year);
@@ -289,6 +346,11 @@ public class Parser {
 
     }
 
+    /**
+     * Sorts a map of integer, integer by key
+     * @param map map to sort
+     * @return sorted map entries
+     */
     private List<Map.Entry<Integer, Integer>> sortMapByYearInt(Map<Integer, Integer> map) {
         List<Map.Entry<Integer, Integer>> list = new LinkedList<Map.Entry<Integer, Integer>>(map.entrySet());
 
@@ -328,14 +390,9 @@ public class Parser {
                 return p;
             }
             return null;
-        } catch (JDOMException e) {
-            System.out.println("JDME");
+        } catch (JDOMException | IOException | NumberFormatException e) {
+            //System.out.println("JDME");
             // handle JDOMException
-        } catch (IOException e) {
-            System.out.println("IOE");
-            // handle IOException
-        } catch (NumberFormatException e) {
-            System.out.println("NFE");
         }
         return null;
     }

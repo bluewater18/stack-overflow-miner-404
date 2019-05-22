@@ -4,17 +4,44 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>440</groupId>
+    <groupId>404</groupId>
     <artifactId>stack-overflow-miner</artifactId>
     <version>1.0</version>
     <build>
         <plugins>
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-compiler-plugin</artifactId>-->
+                <!--<configuration>-->
+                    <!--<source>1.7</source>-->
+                    <!--<target>1.7</target>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
+
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>
+                            package
+                        </phase>
+                        <goals>
+                            <goal>
+                                single
+                            </goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>App</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
             </plugin>
         </plugins>
@@ -27,6 +54,22 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.0</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/com.ximpleware/vtd-xml -->
         <dependency>
             <groupId>com.ximpleware</groupId>
